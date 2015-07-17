@@ -67,7 +67,7 @@ module.exports = function(grunt) {
 					cwd: 'src',
 					dest: 'dist',
 					src: [
-						'*.{php,php}',
+						'**/*.php',
 					]
 				}]
 			}
