@@ -69,7 +69,7 @@ class ffwpInit {
 	public function init() {
 
 		// Initialize the plugin
-		add_action( 'init', array( $this, 'load_textdomain' ) );
+		add_action( 'admin_init', array( $this, 'load_textdomain' ) );
 
 	}
 
