@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Fuzzy Finder
  * Plugin URI: https://github.com/NateWr
- * Description: Fast fuzzy finder for your WordPress admin.
+ * Description: A fuzzy finder for your WordPress admin.
  * Version: 0.1.0
  * Author: Nate Wright
  * Author URI: http://twitter.com/NateWr
