@@ -67,7 +67,7 @@ module.exports = function(grunt) {
 					cwd: 'src',
 					dest: 'dist',
 					src: [
-						'**/*.php',
+						'**/*.{php,txt}',
 					]
 				}]
 			}
@@ -96,7 +96,7 @@ module.exports = function(grunt) {
 				tasks: ['jshint', 'concat', 'uglify', 'sync']
 			},
 			copy: {
-				files: ['src/**/*.php'],
+				files: ['src/**/*.{php,txt}'],
 				tasks: ['copy', 'sync']
 			},
 			sync: {
