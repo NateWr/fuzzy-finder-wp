@@ -105,8 +105,8 @@ class ffwpInit {
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'register_assets' ) );
 
-		// Print string data
-		add_action( 'admin_footer', array( $this, 'get_strings' ) );
+		// Load search data and pass finder to the frontend
+		add_action( 'admin_footer', array( $this, 'load_finder' ) );
 
 	}
 
@@ -139,23 +139,32 @@ class ffwpInit {
 	}
 
 	/**
-	 * Get all the strings to be matched and print the data for use on the
-	 * frontend
+	 * Load search data and pass finder to the frontend
 	 *
 	 * @since 0.1
 	 */
-	public function get_strings() {
+	public function load_finder() {
 
 		$this->get_menu_strings();
 
+		// Compile a template for a result
+		ob_start();
+		include( self::$plugin_dir . '/templates/results.php' );
+		$result_template = ob_get_clean();
+
+		// Pass data
 		wp_localize_script(
 			'ffwp_finder',
-			'ffwp_lookup_data',
+			'ffwp_finder_settings',
 			array(
 				'strings' => $this->strings,
 				'urls' => $this->urls,
+				'result_template' => $result_template,
 			)
 		);
+
+		// Print modal template markup
+		include( self::$plugin_dir . '/templates/finder.php' );
 	}
 
 	/**

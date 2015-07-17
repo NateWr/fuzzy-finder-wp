@@ -1,1 +1,55 @@
 // Styles for the fuzzy finder component
+#ffwp-finder {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.8);
+	z-index: 1000;
+	overflow-y: auto;
+	cursor: pointer;
+	visibility: hidden;
+	opacity: 0;
+	-webkit-transition: opacity 0.3s, visibility 0.3s;
+	-moz-transition: opacity 0.3s, visibility 0.3s;
+	transition: opacity 0.3s, visibility 0.3s;
+
+	&.is-visible {
+		visibility: visible;
+		opacity: 1;
+	}
+}
+
+// Modal
+.ffwp-finder-container {
+	position: relative;
+	width: 90%;
+	max-width: 30em;
+	background: #fff;
+	margin: 64px auto;
+	padding: 16px;
+	cursor: auto;
+	border-radius: 5px;
+	-webkit-transform: translateY(-32px);
+	-moz-transform: translateY(-32px);
+	-ms-transform: translateY(-32px);
+	-o-transform: translateY(-32px);
+	transform: translateY(-32px);
+	-webkit-transition-property: -webkit-transform;
+	-moz-transition-property: -moz-transform;
+	transition-property: transform;
+	-webkit-transition-duration: 0.3s;
+	-moz-transition-duration: 0.3s;
+	transition-duration: 0.3s;
+
+}
+
+// Modal when visible
+.is-visible .ffwp-finder-container {
+	-webkit-transform: translateY(0);
+	-moz-transform: translateY(0);
+	-ms-transform: translateY(0);
+	-o-transform: translateY(0);
+	transform: translateY(0);
+}
