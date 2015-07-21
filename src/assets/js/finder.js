@@ -108,17 +108,35 @@ jQuery(document).ready(function ($) {
 		}
 
 		// Search list for matches
-		for( var i = 0; i < ffwp_finder_settings.strings.length; i++ ) {
+		var i = 0;
+		var len = ffwp_finder_settings.strings.length;
+		var processBatch = function() {
+			for( i; i < len; i++ ) {
 
-			// Stop looping if the term has changed
-			if ( term !== ffwp_finder.current_term ) {
-				break;
-			}
+				if ( ( new RegExp( term, 'i' ) ).test( ffwp_finder_settings.strings[i] ) ) {
+					ffwp_finder.addResult( i );
+				}
 
-			if ( ( new RegExp( term, 'i' ) ).test( ffwp_finder_settings.strings[i] ) ) {
-				ffwp_finder.addResult( i );
+				// Emit an event when we've finished the search
+				if ( i + 1 >= len ) {
+					console.log( 'finished!' );
+					ffwp_finder.cache.finder.trigger( 'ffwpSearchFinished' );
+
+				// Take a breath before continuing with the next batch
+				} else if ( i % 100 === 0 ) {
+
+					// Stop looping if the term has changed
+					if ( term !== ffwp_finder.current_term ) {
+						break;
+					}
+
+					setTimeout( processBatch, 0 );
+					i++;
+					break;
+				}
 			}
-		}
+		};
+		processBatch();
 	};
 
 	/**
