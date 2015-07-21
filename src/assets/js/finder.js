@@ -151,6 +151,12 @@ jQuery(document).ready(function ($) {
 			return;
 		}
 
+		// Don't show too many results in the list. It just makes browsers cry
+		if ( ffwp_finder.results.length > 100 ) {
+			// @todo attach a note saying: more results available, refine search query.
+			return;
+		}
+
 		// Add to array of visible resuls
 		ffwp_finder.results.push( i );
 
