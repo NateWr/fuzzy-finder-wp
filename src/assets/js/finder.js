@@ -22,6 +22,7 @@ jQuery(document).ready(function ($) {
 
 		this.cache.body.on( 'keyup', this.handleShortcuts );
 		this.cache.search.on( 'keyup', this.search );
+		this.cache.finder.on( 'click', this.handleFinderWrapperEvents );
 	};
 
 	/**
@@ -69,6 +70,17 @@ jQuery(document).ready(function ($) {
 		} else if( e.which == 27 && ffwp_finder.cache.finder.hasClass( 'is-visible' ) ) {
 			ffwp_finder.close();
 			return;
+		}
+	};
+
+	/**
+	 * Process click events on the modal wrapper
+	 *
+	 * @since 0.1
+	 */
+	ffwp_finder.handleFinderWrapperEvents = function( e ) {
+		if ( e.type == 'click' && e.target.id == 'ffwp-finder' ) {
+			ffwp_finder.close();
 		}
 	};
 
