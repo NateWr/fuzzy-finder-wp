@@ -148,6 +148,9 @@ class ffwpInit {
 
 		$this->get_menu_strings();
 
+		// Uncomment this to test a large set of sample data
+		// $this->get_sample_strings();
+
 		// Compile a template for a result
 		ob_start();
 		include( self::$plugin_dir . '/templates/result.php' );
@@ -203,6 +206,38 @@ class ffwpInit {
 	 */
 	public function get_menu_item_url( $slug ) {
 		return strpos( $slug, '.php' ) === false ? menu_page_url( $slug, false ) : get_admin_url( null, $slug );
+	}
+
+	/**
+	 * Retrieve sample strings for load testing very large lists
+	 *
+	 * Around 100,000 will take a while to loop through
+	 *
+	 * @since 0.1
+	 */
+	public function get_sample_strings() {
+
+		$c = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		$clen = strlen( $c );
+		for( $i = 0; $i < 50000; $i++ ) {
+			$this->strings[] = $this->generate_random_string( $c, $clen, 50 );
+			$this->urls[] = 'edit.php?post=12345';
+		}
+
+	}
+
+	/**
+	 * Generate a random string for load testing
+	 *
+	 * @since 0.1
+	 */
+	public function generate_random_string( $c, $clen, $length = 10 ) {
+	    $str = '';
+	    for ($i = 0; $i < $length; $i++) {
+	        $str .= $c[ rand( 0, $clen - 1 ) ];
+	    }
+
+	    return $str;
 	}
 }
 } // endif;
