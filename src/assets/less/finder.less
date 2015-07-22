@@ -53,7 +53,7 @@
 	width: 90%;
 	max-width: 30em;
 	background: @lift;
-	margin: 64px auto;
+	margin: 32px auto;
 	padding-bottom: 48px; // status bar
 	cursor: auto;
 	border-radius: @radius; // Don't stick out over header/footer corners
@@ -68,6 +68,10 @@
 	-webkit-transition-duration: 0.3s;
 	-moz-transition-duration: 0.3s;
 	transition-duration: 0.3s;
+
+	@media( min-height: 768px ) {
+		margin: 64px auto;
+	}
 
 }
 
@@ -103,6 +107,36 @@
 	margin: 0;
 	padding: 0;
 	list-style: none;
+	overflow-y: scroll;
+	// @todo, small screens probably deserve a completely different approach,
+	// maybe a full-screen display
+	max-height: 200px;
+
+	// Set a reasonable max height for the results panel based on screen height
+	// break points.
+	// unless they scroll.
+	// results height = max height - 114px (header) - 64 (modal margins)
+	@media( min-height: 480px ) {
+		overflow-y: scroll;
+		max-height: 480px - 178px;
+	}
+
+	@media( min-height: 614px ) {
+		overflow-y: scroll;
+		max-height: 614px - 178px;
+	}
+
+	@media( min-height: 768px ) {
+		overflow-y: scroll;
+		max-height: 768px - 178px;
+
+	}
+
+	@media( min-height: 1024px ) {
+		overflow-y: scroll;
+		max-height: 1024px - 178px;
+
+	}
 
 	> li {
 		padding: 0;
