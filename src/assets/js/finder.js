@@ -119,7 +119,6 @@ jQuery(document).ready(function ($) {
 
 				// Emit an event when we've finished the search
 				if ( i + 1 >= len ) {
-					console.log( 'finished!' );
 					ffwp_finder.cache.finder.trigger( 'ffwpSearchFinished' );
 
 				// Take a breath before continuing with the next batch
