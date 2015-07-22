@@ -1,4 +1,30 @@
+//
 // Styles for the fuzzy finder component
+//
+
+// Colors
+@primary:         #0073aa;
+@bg:              #ddd;
+@lift:            #fff;
+@border-color:    #bbb;
+@text-light:      #777;
+@text-light-rgba: rgba(0, 0, 0, 0.54);
+
+// Fonts
+@font-sml:        11px;
+@line-sml:        16px;
+@line-base:       24px;
+@line-tall:       32px;
+
+// Baseline
+@base:            16px;
+@half:            @base / 2;
+@double:          @base * 2;
+
+// Borders
+@border:          1px solid @border-color;
+@radius:          @half;
+
 #ffwp-finder {
 	position: fixed;
 	top: 0;
@@ -26,16 +52,16 @@
 	position: relative;
 	width: 90%;
 	max-width: 30em;
-	background: #fff;
+	background: @lift;
 	margin: 64px auto;
-	padding: 16px;
+	padding-bottom: 48px; // status bar
 	cursor: auto;
-	border-radius: 5px;
-	-webkit-transform: translateY(-32px);
-	-moz-transform: translateY(-32px);
-	-ms-transform: translateY(-32px);
-	-o-transform: translateY(-32px);
-	transform: translateY(-32px);
+	border-radius: @radius; // Don't stick out over header/footer corners
+	-webkit-transform: translateY(-@double);
+	-moz-transform: translateY(-@double);
+	-ms-transform: translateY(-@double);
+	-o-transform: translateY(-@double);
+	transform: translateY(-@double);
 	-webkit-transition-property: -webkit-transform;
 	-moz-transition-property: -moz-transform;
 	transition-property: transform;
@@ -52,4 +78,90 @@
 	-ms-transform: translateY(0);
 	-o-transform: translateY(0);
 	transform: translateY(0);
+}
+
+// Header
+.ffwp-control {
+	padding: @base;
+	background: @primary;
+	border-top-left-radius: @radius;
+	border-top-right-radius: @radius;
+
+	input {
+		width: 100%;
+		padding: 0 0.5em;
+		line-height: @line-tall;
+
+		// Overwrite some existing styles
+		box-shadow: none;
+		border: none;
+	}
+}
+
+// Results list
+.ffwp-results {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	> li {
+		padding: 0;
+		margin: 0;
+
+		> a {
+			display: block;
+			width: 100%;
+			padding: @half / 2 1em;
+			line-height: @line-base - 1; // account for border
+			border-bottom: @border;
+			box-sizing: border-box;
+			overflow: hidden;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+		}
+	}
+}
+
+// Status bar
+.ffwp-status {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	padding: @half @base;
+	background: @bg;
+	border-bottom-left-radius: @radius;
+	border-bottom-right-radius: @radius;
+	color: @text-light;
+
+	> span {
+		display: inline-block;
+		line-height: @line-tall;
+
+		&:not( .ffwp-results ) {
+			display: none;
+		}
+	}
+
+	// Waiting for input
+	&.waiting {
+
+		.ffwp-waiting {
+			display: inline-block;
+		}
+
+		// Don't show any results until we've taken an action
+		.ffwp-results {
+			display: none;
+		}
+	}
+
+	// Fetching symbols
+	&.fetching .ffwp-fetching { display: inline-block; }
+
+	// Searching for matches
+	&.searching .ffwp-searching { display: inline-block; }
+
+	// Search complete
+	&.complete .ffwp-complete { display: inline-block; }
 }
