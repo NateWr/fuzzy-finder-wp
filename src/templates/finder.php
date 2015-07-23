@@ -9,11 +9,11 @@
 		<ul class="ffwp-results"></ul>
 		<div class="ffwp-status waiting">
 			<span class="ffwp-waiting">
-				<?php esc_html_e( 'Waiting for input', 'fuzzy-finder-wp' ); ?>
+				<?php esc_html_e( 'Waiting for 3 characters', 'fuzzy-finder-wp' ); ?>
 			</span>
-			<span class="ffwp-fetching">
-				<?php esc_html_e( 'Fetching symbols', 'fuzzy-finder-wp' ); ?>
-			</span>
+				<span class="ffwp-fetching">
+					<?php esc_html_e( 'Fetching symbols', 'fuzzy-finder-wp' ); ?>
+				</span>
 			<span class="ffwp-searching">
 				<?php esc_html_e( 'Searching', 'fuzzy-finder-wp' ); ?>
 			</span>

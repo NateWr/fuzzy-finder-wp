@@ -13,16 +13,22 @@ jQuery(document).ready(function ($) {
 		// Result index keys currently being shown
 		this.results = [];
 
+		// Current status
+		this.status = 'waiting';
+
 		// jQuery object cache
 		this.cache = this.cache || {};
 		this.cache.body = $( 'body' );
 		this.cache.finder = $( '#ffwp-finder' );
 		this.cache.search = this.cache.finder.find( '#ffwp-search' );
 		this.cache.results = this.cache.finder.find( '.ffwp-results' );
+		this.cache.status = this.cache.finder.find( '.ffwp-status' );
 
 		this.cache.body.on( 'keyup', this.handleShortcuts );
 		this.cache.search.on( 'keyup', this.search );
 		this.cache.finder.on( 'click', this.handleFinderWrapperEvents );
+		this.cache.finder.on( 'ffwpSearchBegun', this.setStatusSearching );
+		this.cache.finder.on( 'ffwpSearchFinished', this.setStatusComplete );
 	};
 
 	/**
@@ -96,6 +102,7 @@ jQuery(document).ready(function ($) {
 
 		if ( term.length < 3 ) {
 			ffwp_finder.clearResults();
+			ffwp_finder.setStatusWaiting();
 			return;
 		}
 
@@ -106,6 +113,8 @@ jQuery(document).ready(function ($) {
 				ffwp_finder.removeResult( ffwp_finder.results[r] );
 			}
 		}
+
+		ffwp_finder.setStatusSearching();
 
 		// Search list for matches
 		var i = 0;
@@ -189,6 +198,60 @@ jQuery(document).ready(function ($) {
 	ffwp_finder.clearResults = function() {
 		ffwp_finder.results = [];
 		ffwp_finder.cache.results.empty();
+	};
+
+	/**
+	 * Set the finder's status to fetching
+	 *
+	 * @since 0.1
+	 */
+	ffwp_finder.setStatusFetching = function() {
+
+		ffwp_finder.cache.status.removeClass( 'fetching complete waiting' )
+			.addClass( 'fetching' );
+
+		ffwp_finder.status = 'fetching';
+	};
+
+	/**
+	 * Set the finder's status to searching
+	 *
+	 * @since 0.1
+	 */
+	ffwp_finder.setStatusSearching = function() {
+
+		ffwp_finder.cache.status.removeClass( 'fetching complete waiting' )
+			.addClass( 'searching' );
+
+		ffwp_finder.status = 'searching';
+	};
+
+	/**
+	 * Set the finder's status to complete
+	 *
+	 * @since 0.1
+	 */
+	ffwp_finder.setStatusComplete = function() {
+
+		ffwp_finder.cache.status.removeClass( 'fetching searching waiting' )
+			.addClass( 'complete' );
+
+		ffwp_finder.status = 'complete';
+	};
+
+	/**
+	 * Set the finder's status to waiting
+	 *
+	 * This status indicates that no search will be processed for current terms
+	 *
+	 * @since 0.1
+	 */
+	ffwp_finder.setStatusWaiting = function() {
+
+		ffwp_finder.cache.status.removeClass( 'fetching searching complete' )
+			.addClass( 'waiting' );
+
+		ffwp_finder.status = 'waiting';
 	};
 
 	// Go!
