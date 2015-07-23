@@ -1,0 +1,56 @@
+//
+// Mix-ins, animations, utilities and helper functions
+//
+
+// Mix-ins
+.transform (@transform) {
+	transform: @transform;
+	-webkit-transform: @transform;
+	-moz-transform: @transform;
+	-o-transform: @transform;
+}
+
+.animation(@animation) {
+	-webkit-animation: @animation;
+	-moz-animation: @animation;
+	-ms-animation: @animation;
+	-o-animation: @animation;
+	animation: @animation;
+}
+
+// Animations
+@keyframes cffrtbrotate {
+  0% {
+    .transform(rotateZ(-360deg));
+  }
+  100% {
+    .transform(rotateZ(0deg));
+  }
+}
+
+@-webkit-keyframes cffrtbrotate {
+  0% {
+    .transform(rotateZ(-360deg));
+  }
+  100% {
+    .transform(rotateZ(0deg));
+  }
+}
+
+@-moz-keyframes cffrtbrotate {
+  0% {
+    .transform(rotateZ(-360deg));
+  }
+  100% {
+    .transform(rotateZ(0deg));
+  }
+}
+
+@-o-keyframes cffrtbrotate {
+  0% {
+    .transform(rotateZ(-360deg));
+  }
+  100% {
+    .transform(rotateZ(0deg));
+  }
+}

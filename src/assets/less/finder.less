@@ -2,28 +2,9 @@
 // Styles for the fuzzy finder component
 //
 
-// Colors
-@primary:         #0073aa;
-@bg:              #ddd;
-@lift:            #fff;
-@border-color:    #bbb;
-@text-light:      #777;
-@text-light-rgba: rgba(0, 0, 0, 0.54);
-
-// Fonts
-@font-sml:        11px;
-@line-sml:        16px;
-@line-base:       24px;
-@line-tall:       32px;
-
-// Baseline
-@base:            16px;
-@half:            @base / 2;
-@double:          @base * 2;
-
-// Borders
-@border:          1px solid @border-color;
-@radius:          @half;
+@import "variables";
+@import "utils";
+@import "components";
 
 #ffwp-finder {
 	position: fixed;
@@ -57,11 +38,7 @@
 	padding-bottom: 48px; // status bar
 	cursor: auto;
 	border-radius: @radius; // Don't stick out over header/footer corners
-	-webkit-transform: translateY(-@double);
-	-moz-transform: translateY(-@double);
-	-ms-transform: translateY(-@double);
-	-o-transform: translateY(-@double);
-	transform: translateY(-@double);
+	.transform(translateY(-32px));
 	-webkit-transition-property: -webkit-transform;
 	-moz-transition-property: -moz-transform;
 	transition-property: transform;
@@ -77,11 +54,7 @@
 
 // Modal when visible
 .is-visible .ffwp-finder-container {
-	-webkit-transform: translateY(0);
-	-moz-transform: translateY(0);
-	-ms-transform: translateY(0);
-	-o-transform: translateY(0);
-	transform: translateY(0);
+	.transform(translateY(0));
 }
 
 // Header
@@ -167,6 +140,7 @@
 	background: @bg;
 	border-bottom-left-radius: @radius;
 	border-bottom-right-radius: @radius;
+	font-size: @font-sml;
 	color: @text-light;
 
 	> span {
@@ -175,6 +149,10 @@
 
 		&:not( .ffwp-results ) {
 			display: none;
+		}
+
+		> span {
+			margin-right: 0.5em;
 		}
 	}
 
@@ -199,4 +177,10 @@
 
 	// Search complete
 	&.complete .ffwp-complete { display: inline-block; }
+
+	.dashicons {
+		font-size: 18px;
+		width: 20px; // match the spinner
+		line-height: 32px;
+	}
 }

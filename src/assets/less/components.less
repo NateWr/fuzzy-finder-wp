@@ -1,0 +1,22 @@
+//
+// Re-usable components
+//
+
+.ffwp-spinner {
+
+	&:after {
+		display: inline-block;
+		position: relative;
+		width: 20px;
+		height: 20px;
+		.animation( cffrtbrotate .6s linear infinite );
+		border-radius: 100%;
+		border-top: 1px solid #888;
+		border-bottom: 1px solid #bbb;
+		border-left: 1px solid #888;
+		border-right: 1px solid #bbb;
+		vertical-align: middle;
+		content: '';
+		opacity: 0.5;
+	}
+}
