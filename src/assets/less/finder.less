@@ -148,16 +148,16 @@
 	color: @text-light;
 
 	> span {
-		display: inline-block;
+		display: none;
 		line-height: @line-tall;
-
-		&:not( .ffwp-results ) {
-			display: none;
-		}
 
 		> span {
 			margin-right: 0.5em;
 		}
+	}
+
+	.ffwp-progress {
+		float: right;
 	}
 
 	// Waiting for input
@@ -165,11 +165,6 @@
 
 		.ffwp-waiting {
 			display: inline-block;
-		}
-
-		// Don't show any results until we've taken an action
-		.ffwp-results {
-			display: none;
 		}
 	}
 
@@ -181,6 +176,10 @@
 
 	// Search complete
 	&.complete .ffwp-complete { display: inline-block; }
+
+	// Show search progress
+	&.searching .ffwp-progress,
+	&.complete .ffwp-progress { display: inline-block; }
 
 	.dashicons {
 		font-size: 18px;

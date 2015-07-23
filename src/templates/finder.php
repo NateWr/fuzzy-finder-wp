@@ -24,6 +24,7 @@
 				<span class="dashicons dashicons-yes"></span>
 				<?php esc_html_e( 'Finished', 'fuzzy-finder-wp' ); ?>
 			</span>
+			<span class="ffwp-progress"></span>
 		</div>
 	</div>
 </div>

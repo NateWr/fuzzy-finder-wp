@@ -23,6 +23,7 @@ jQuery(document).ready(function ($) {
 		this.cache.search = this.cache.finder.find( '#ffwp-search' );
 		this.cache.results = this.cache.finder.find( '.ffwp-results' );
 		this.cache.status = this.cache.finder.find( '.ffwp-status' );
+		this.cache.progress = this.cache.status.find( '.ffwp-progress' );
 
 		this.cache.body.on( 'keyup', this.handleShortcuts );
 		this.cache.search.on( 'keyup', this.search );
@@ -128,10 +129,13 @@ jQuery(document).ready(function ($) {
 
 				// Emit an event when we've finished the search
 				if ( i + 1 >= len ) {
+					i++;
+					ffwp_finder.updateProgress( i, len );
 					ffwp_finder.cache.finder.trigger( 'ffwpSearchFinished' );
 
 				// Take a breath before continuing with the next batch
 				} else if ( i % 100 === 0 ) {
+					ffwp_finder.updateProgress( i, len );
 
 					// Stop looping if the term has changed
 					if ( term !== ffwp_finder.current_term ) {
@@ -211,6 +215,7 @@ jQuery(document).ready(function ($) {
 			.addClass( 'fetching' );
 
 		ffwp_finder.status = 'fetching';
+		ffwp_finder.clearProgress();
 	};
 
 	/**
@@ -252,6 +257,26 @@ jQuery(document).ready(function ($) {
 			.addClass( 'waiting' );
 
 		ffwp_finder.status = 'waiting';
+		ffwp_finder.clearProgress();
+	};
+
+	/**
+	 * Update the search progress tracker
+	 *
+	 * @since 0.1
+	 */
+	ffwp_finder.updateProgress = function( searched, total ) {
+		// @todo the divider should be translatable
+		ffwp_finder.cache.progress.html( searched + '/' + total );
+	};
+
+	/**
+	 * Clear the search progress tracker
+	 *
+	 * @since 0.1
+	 */
+	ffwp_finder.clearProgress = function() {
+		ffwp_finder.cache.progress.empty();
 	};
 
 	// Go!
