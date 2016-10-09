@@ -146,7 +146,11 @@ class ffwpInit {
 	 */
 	public function load_finder() {
 
-		$this->get_menu_strings();
+		$this->get_menu_items();
+		$this->get_recent_items();
+
+		// Uncomment this to test a large set of sample data
+		// $this->get_sample_strings();
 
 		// Compile a template for a result
 		ob_start();
@@ -169,11 +173,11 @@ class ffwpInit {
 	}
 
 	/**
-	 * Retrieve all menu strings
+	 * Retrieve all menu items for the finder
 	 *
 	 * @since 0.1
 	 */
-	public function get_menu_strings() {
+	public function get_menu_items() {
 		global $menu;
 		global $submenu;
 
@@ -188,8 +192,9 @@ class ffwpInit {
 			$this->urls[] = $this->get_menu_item_url( $item[2] );
 
 			if ( !empty( $submenu[ $item[2] ] ) ) {
+				$separator = apply_filters( 'ffwp_string_separator', ' > ' );
 				foreach( $submenu[ $item[2] ] as $subitem ) {
-					$this->strings[] = $item[0] . apply_filters( 'ffwp_string_separator', ' > ' ) . $subitem[0];
+					$this->strings[] = $item[0] . $separator . $subitem[0];
 					$this->urls[] = $this->get_menu_item_url( $subitem[2] );
 				}
 			}
@@ -203,6 +208,61 @@ class ffwpInit {
 	 */
 	public function get_menu_item_url( $slug ) {
 		return strpos( $slug, '.php' ) === false ? menu_page_url( $slug, false ) : get_admin_url( null, $slug );
+	}
+
+	/**
+	 * Retrieve rece*ntly modified posts for the finder
+	 *
+	 * @since 0.1
+	 */
+	public function get_recent_items() {
+
+		$args = array(
+			'post_type' => 'any',
+			'posts_per_page' => 100,
+			'order_by' => 'modified',
+			'post_status' => 'any',
+		);
+
+		$posts = get_posts( apply_filters( 'ffwp_recent_posts_args', $args ) );
+
+		$separator = apply_filters( 'ffwp_string_separator', ' > ' );
+		foreach( $posts as $post ) {
+			$this->strings[] = get_post_type_object( $post->post_type )->labels->singular_name . $separator . apply_filters( 'the_title', $post->post_title );
+			$this->urls[] = admin_url( 'post.php?post=' . $post->ID . '&action=edit' );
+		}
+	}
+
+	/**
+	 * Retrieve sample strings for load testing very large lists
+	 *
+	 * Around 100,000 will take a while to loop through
+	 *
+	 * @since 0.1
+	 */
+	public function get_sample_strings() {
+
+		$c = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		$clen = strlen( $c );
+		for( $i = 0; $i < 50000; $i++ ) {
+			$this->strings[] = $this->generate_random_string( $c, $clen, 50 );
+			$this->urls[] = 'edit.php?post=12345';
+		}
+
+	}
+
+	/**
+	 * Generate a random string for load testing
+	 *
+	 * @since 0.1
+	 */
+	public function generate_random_string( $c, $clen, $length = 10 ) {
+	    $str = '';
+	    for ($i = 0; $i < $length; $i++) {
+	        $str .= $c[ rand( 0, $clen - 1 ) ];
+	    }
+
+	    return $str;
 	}
 }
 } // endif;
