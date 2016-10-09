@@ -33,7 +33,7 @@
 	position: relative;
 	width: 90%;
 	max-width: 30em;
-	background: @lift;
+	background: @bg;
 	margin: 32px auto;
 	padding-bottom: 48px; // status bar
 	cursor: auto;
@@ -59,7 +59,7 @@
 
 // Header
 .ffwp-control {
-	padding: @base;
+	padding: 1em;
 	background: @primary;
 	border-top-left-radius: @radius;
 	border-top-right-radius: @radius;
@@ -67,7 +67,7 @@
 	input {
 		width: 100%;
 		padding: 0 0.5em;
-		line-height: @line-tall;
+		line-height: 2em;
 
 		// Overwrite some existing styles
 		box-shadow: none;
@@ -81,6 +81,7 @@
 	padding: 0;
 	list-style: none;
 	overflow-y: scroll;
+	background: @lift;
 	// @todo, small screens probably deserve a completely different approach,
 	// maybe a full-screen display
 	max-height: 200px;
@@ -111,25 +112,33 @@
 
 	}
 
-	> li {
+	li {
 		padding: 0;
 		margin: 0;
+	}
 
-		> a {
-			display: block;
-			width: 100%;
-			padding: @half / 2 1em;
-			line-height: @line-base - 1; // account for border
-			border-bottom: @border;
-			box-sizing: border-box;
-			overflow: hidden;
-			white-space: nowrap;
-			text-overflow: ellipsis;
-		}
+	a {
+		display: block;
+		width: 100%;
+		padding: 0.7em 1em;
+		line-height: 1.5em;
+		border-bottom: @border;
+		box-sizing: border-box;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		text-decoration: none;
 
-		&:last-child > a {
-			border-bottom: none;
+		&:hover,
+		&:focus {
+			background: @light-shade;
+			outline: 0;
+			box-shadow: none;
 		}
+	}
+
+	li:last-child > a {
+		border-bottom: none;
 	}
 }
 
@@ -139,8 +148,8 @@
 	bottom: 0;
 	left: 0;
 	right: 0;
-	padding: @half @base;
-	min-height: @double;
+	padding: 0.5em 1em;
+	min-height: 2em;
 	background: @bg;
 	border-bottom-left-radius: @radius;
 	border-bottom-right-radius: @radius;
@@ -149,7 +158,7 @@
 
 	> span {
 		display: none;
-		line-height: @line-tall;
+		line-height: 2em;
 
 		> span {
 			margin-right: 0.5em;
