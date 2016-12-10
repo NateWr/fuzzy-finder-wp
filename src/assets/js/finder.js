@@ -13,8 +13,30 @@ jQuery(document).ready(function ($) {
 		// Result index keys currently being shown
 		this.results = [];
 
+		// Search data
+		this.strings = [];
+		this.urls = [];
+		this.post_ids = [];
+
+		// Check for local storage support in browser
+		var stored_strings = [];
+		var stored_urls = [];
+		try {
+			stored_strings = JSON.parse( localStorage.getItem( 'ffwp_finder_strings' ) ) || [];
+			stored_urls = JSON.parse( localStorage.getItem( 'ffwp_finder_urls' ) ) || [];
+			this.post_ids = JSON.parse( localStorage.getItem( 'ffwp_finder_post_ids' ) ) || [];
+			this.hasLocalStorage = true;
+		} catch( e ) {
+			this.hasLocalStorage = false;
+		}
+
+		this.strings = ffwp_finder_settings.strings.concat( stored_strings );
+		this.urls = ffwp_finder_settings.urls.concat( stored_urls );
+
 		// Current status
 		this.status = 'waiting';
+		this.searched_count = 0;
+		this.total_count = ffwp_finder.strings.length;
 
 		// jQuery object cache
 		this.cache = this.cache || {};
@@ -100,6 +122,11 @@ jQuery(document).ready(function ($) {
 	ffwp_finder.search = function() {
 
 		var term = ffwp_finder.cache.search.val();
+
+		if ( term === ffwp_finder.current_term ) {
+			return;
+		}
+
 		ffwp_finder.current_term = term;
 
 		if ( term.length < 3 ) {
@@ -111,32 +138,72 @@ jQuery(document).ready(function ($) {
 		// Remove existing results that no longer match
 		// Loop in reverse order so we don't tamper with array keys
 		for( var r = ffwp_finder.results.length - 1; r >= 0; r-- ) {
-			if ( !( new RegExp( term, 'i' ) ).test( ffwp_finder_settings.strings[ ffwp_finder.results[r] ] ) ) {
+			if ( !( new RegExp( term, 'i' ) ).test( ffwp_finder.strings[ ffwp_finder.results[r] ] ) ) {
 				ffwp_finder.removeResult( ffwp_finder.results[r] );
 			}
 		}
 
 		ffwp_finder.setStatusSearching();
 
+		// Search the database
+		if ( wp.api !== 'undefined' && ffwp_finder_settings.post_types.length ) {
+
+			var posts = new wp.api.collections.Posts();
+			posts.fetch({
+				data: {
+					search: term,
+					posts_per_page: 100,
+				},
+				error: function() {
+					if ( term !== ffwp_finder.current_term ) {
+						return;
+					}
+					console.log( 'Error fetching posts. This error should probably be more helpful.' );
+				},
+				success: function( collection, models, xhr ) {
+					if ( term !== ffwp_finder.current_term ) {
+						return;
+					}
+					var url = ffwp_finder_settings.admin_url + '/' + _.findWhere( ffwp_finder_settings.post_types, { post_type: 'post' } ).edit_link + '&action=edit';
+					collection.forEach( function( post ) {
+
+						// Don't add an item twice
+						var key = ffwp_finder.post_ids.indexOf( post.get( 'id' ) );
+						if ( key < 0 ) {
+							key = ffwp_finder.strings.length;
+						}
+
+						ffwp_finder.strings[key] = post.get('title').rendered;
+						ffwp_finder.urls[key] = url.replace( '%d', post.get( 'id' ) );
+						ffwp_finder.post_ids[key] = post.get( 'id' );
+						ffwp_finder.addResult( key, 'live', true );
+					} );
+					ffwp_finder.updateProgress();
+					ffwp_finder.updateLocalStorage();
+				},
+			});
+
+		}
+
 		// Search list for matches
 		var i = 0;
-		var len = ffwp_finder_settings.strings.length;
+		var len = ffwp_finder.strings.length;
 		var processBatch = function() {
 			for( i; i < len; i++ ) {
 
-				if ( ( new RegExp( term, 'i' ) ).test( ffwp_finder_settings.strings[i] ) ) {
-					ffwp_finder.addResult( i );
+				if ( ( new RegExp( term, 'i' ) ).test( ffwp_finder.strings[i] ) ) {
+					ffwp_finder.addResult( i, 'cache' );
 				}
 
 				// Emit an event when we've finished the search
 				if ( i + 1 >= len ) {
 					i++;
-					ffwp_finder.updateProgress( i, len );
+					ffwp_finder.updateProgress( i );
 					ffwp_finder.cache.finder.trigger( 'ffwpSearchFinished' );
 
 				// Take a breath before continuing with the next batch
 				} else if ( i % 100 === 0 ) {
-					ffwp_finder.updateProgress( i, len );
+					ffwp_finder.updateProgress( i );
 
 					// Stop looping if the term has changed
 					if ( term !== ffwp_finder.current_term ) {
@@ -157,11 +224,12 @@ jQuery(document).ready(function ($) {
 	 *
 	 * @since 0.1
 	 */
-	ffwp_finder.addResult = function( i ) {
+	ffwp_finder.addResult = function( i, resultClass, prepend ) {
 
-		// Already visible
+		// Already in results. Remove the existing result so it can be updated
+		// with the new result
 		if ( ffwp_finder.results.indexOf( i ) !== -1 ) {
-			return;
+			ffwp_finder.removeResult(i);
 		}
 
 		// Don't show too many results in the list. It just makes browsers cry
@@ -174,10 +242,15 @@ jQuery(document).ready(function ($) {
 		ffwp_finder.results.push( i );
 
 		// Attach to dom
-		var html = ffwp_finder_settings.result_template.replace( '{url}', ffwp_finder_settings.urls[i] )
-			.replace( '{string}', ffwp_finder_settings.strings[i] )
-			.replace( '{index}', i.toString() );
-		ffwp_finder.cache.results.append( html );
+		var html = ffwp_finder_settings.result_template.replace( '{url}', ffwp_finder.urls[i] )
+			.replace( '{string}', ffwp_finder.strings[i] )
+			.replace( '{index}', i.toString() )
+			.replace( '{class}', resultClass );
+		if ( prepend ) {
+			ffwp_finder.cache.results.prepend( html );
+		} else {
+			ffwp_finder.cache.results.append( html );
+		}
 	};
 
 	/**
@@ -193,6 +266,8 @@ jQuery(document).ready(function ($) {
 		}
 
 		ffwp_finder.cache.results.find( '#ffwp-result-' + i.toString() ).remove();
+
+		ffwp_finder.updateProgress();
 	};
 
 	/**
@@ -266,12 +341,14 @@ jQuery(document).ready(function ($) {
 	 *
 	 * @since 0.1
 	 */
-	ffwp_finder.updateProgress = function( searched, total ) {
+	ffwp_finder.updateProgress = function( searched ) {
+		this.searched_count += searched;
+
 		// @todo needs to be translatable
-		if ( searched === total ) {
+		if ( typeof searched === 'undefined' || searched === this.total_count ) {
 			ffwp_finder.cache.progress.html( ffwp_finder.results.length + ' matches' );
 		} else {
-			ffwp_finder.cache.progress.html( searched + '/' + total );
+			ffwp_finder.cache.progress.html( searched + '/' + this.total_count );
 		}
 	};
 
@@ -282,6 +359,32 @@ jQuery(document).ready(function ($) {
 	 */
 	ffwp_finder.clearProgress = function() {
 		ffwp_finder.cache.progress.empty();
+	};
+
+	/**
+	 * Update arrays in local storage
+	 *
+	 * @since 0.1
+	 */
+	ffwp_finder.updateLocalStorage = function( keys ) {
+
+		if ( !ffwp_finder.hasLocalStorage ) {
+			return;
+		}
+
+		var strings = ffwp_finder.strings.slice(0);
+		strings.splice( 0, ffwp_finder_settings.strings.length );
+		var urls = ffwp_finder.urls.slice(0);
+		urls.splice( 0, ffwp_finder_settings.urls.length );
+
+		if ( strings.length > 1000 ) {
+			strings.splice( 0, strings.length - 1000 );
+			urls.splice( 0, urls.length - 1000 );
+		}
+
+		localStorage.setItem( 'ffwp_finder_strings', JSON.stringify( strings ) );
+		localStorage.setItem( 'ffwp_finder_urls', JSON.stringify( urls ) );
+		localStorage.setItem( 'ffwp_finder_post_ids', JSON.stringify( ffwp_finder.post_ids ) );
 	};
 
 	// Go!

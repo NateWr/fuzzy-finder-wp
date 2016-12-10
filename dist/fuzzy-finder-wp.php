@@ -147,7 +147,6 @@ class ffwpInit {
 	public function load_finder() {
 
 		$this->get_menu_items();
-		$this->get_recent_items();
 
 		// Uncomment this to test a large set of sample data
 		// $this->get_sample_strings();
@@ -165,6 +164,8 @@ class ffwpInit {
 				'strings' => $this->strings,
 				'urls' => $this->urls,
 				'result_template' => $result_template,
+				'post_types' => $this->get_post_types(),
+				'admin_url' => admin_url(),
 			)
 		);
 
@@ -211,26 +212,26 @@ class ffwpInit {
 	}
 
 	/**
-	 * Retrieve rece*ntly modified posts for the finder
+	 * Retrieve post type information
 	 *
 	 * @since 0.1
 	 */
-	public function get_recent_items() {
+	public function get_post_types() {
 
-		$args = array(
-			'post_type' => 'any',
-			'posts_per_page' => 100,
-			'order_by' => 'modified',
-			'post_status' => 'any',
-		);
+		$return = array();
 
-		$posts = get_posts( apply_filters( 'ffwp_recent_posts_args', $args ) );
-
-		$separator = apply_filters( 'ffwp_string_separator', ' > ' );
-		foreach( $posts as $post ) {
-			$this->strings[] = get_post_type_object( $post->post_type )->labels->singular_name . $separator . apply_filters( 'the_title', $post->post_title );
-			$this->urls[] = admin_url( 'post.php?post=' . $post->ID . '&action=edit' );
+		$post_types = get_post_types( array( 'show_ui' => true, 'show_in_rest' => true ), 'objects' );
+		foreach( $post_types as $post_type => $attributes ) {
+			$return[] = array(
+				'post_type' => $post_type,
+				'label' => isset( $attributes->labels ) && !empty( $attributes->labels->singular_name ) ? $attributes->labels->singular_name : $attributes->label,
+				'edit_link' => $attributes->_edit_link,
+			);
 		}
+
+		$return = apply_filters( 'ffwp_post_types', $return );
+
+		return $return;
 	}
 
 	/**
