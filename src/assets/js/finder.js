@@ -58,6 +58,7 @@ jQuery(document).ready(function ($) {
 		setTimeout( function() {
 			ffwp_finder.cache.search.val( '' );
 			ffwp_finder.clearResults();
+			ffwp_finder.setStatusWaiting();
 		}, 300 );
 	};
 
