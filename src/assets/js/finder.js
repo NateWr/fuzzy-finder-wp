@@ -153,7 +153,7 @@ jQuery(document).ready(function ($) {
 					return;
 				}
 				var post_type = _.findWhere( ffwp_finder_settings.post_types, { post_type: collection.at(0).get( 'type' ) } );
-				var url = ffwp_finder_settings.admin_url + '/' + post_type.edit_link + '&action=edit';
+				var url = ffwp_finder_settings.admin_url + post_type.edit_link + '&action=edit';
 				collection.forEach( function( post ) {
 
 					// Don't add an item twice
