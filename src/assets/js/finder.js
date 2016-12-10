@@ -266,8 +266,12 @@ jQuery(document).ready(function ($) {
 	 * @since 0.1
 	 */
 	ffwp_finder.updateProgress = function( searched, total ) {
-		// @todo the divider should be translatable
-		ffwp_finder.cache.progress.html( searched + '/' + total );
+		// @todo needs to be translatable
+		if ( searched === total ) {
+			ffwp_finder.cache.progress.html( ffwp_finder.results.length + ' matches' );
+		} else {
+			ffwp_finder.cache.progress.html( searched + '/' + total );
+		}
 	};
 
 	/**
