@@ -212,10 +212,14 @@ jQuery(document).ready(function ($) {
 					} else if ( post_type === 'attachment' ) {
 						posts = new wp.api.collections.Media();
 					} else {
-						posts = null;
+						var routeModel = wp.api.endpoints.at(1);
+						var postModel = wp.api.collections.Posts.extend({
+							url: routeModel.get( 'apiRoot' ) + routeModel.get( 'versionString' ) + post_type,
+						});
+						posts = new postModel();
 					}
 
-					if ( posts ) {
+					if ( posts && typeof posts.fetch === 'function' ) {
 						posts.fetch({
 							data: {
 								search: term,
