@@ -136,7 +136,7 @@ class ffwpInit {
 	 */
 	public function register_assets() {
 		wp_enqueue_style( 'ffwp_finder', self::$plugin_url . '/assets/css/finder.css', '', self::$plugin_version );
-		wp_enqueue_script( 'ffwp_finder', self::$plugin_url . '/assets/js/finder.js', array( 'jquery' ), self::$plugin_version, true );
+		wp_enqueue_script( 'ffwp_finder', self::$plugin_url . '/assets/js/finder.js', array( 'jquery', 'wp-api' ), self::$plugin_version, true );
 	}
 
 	/**

@@ -35,7 +35,7 @@
 	max-width: 30em;
 	background: @bg;
 	margin: 32px auto;
-	padding-bottom: 48px; // status bar
+	padding-bottom: 44px; // status bar
 	cursor: auto;
 	border-radius: @radius; // Don't stick out over header/footer corners
 	.transform(translateY(-32px));
@@ -148,7 +148,7 @@
 	bottom: 0;
 	left: 0;
 	right: 0;
-	padding: 0.5em 1em;
+	padding: 1em;
 	min-height: 2em;
 	background: @bg;
 	border-bottom-left-radius: @radius;
@@ -159,10 +159,6 @@
 	> span {
 		display: none;
 		line-height: 2em;
-
-		> span {
-			margin-right: 0.5em;
-		}
 	}
 
 	.ffwp-progress {
@@ -193,6 +189,6 @@
 	.dashicons {
 		font-size: 18px;
 		width: 20px; // match the spinner
-		line-height: 32px;
+		vertical-align: middle;
 	}
 }
