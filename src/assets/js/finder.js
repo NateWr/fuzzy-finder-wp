@@ -41,7 +41,7 @@ jQuery(document).ready(function ($) {
 
 		// Current status
 		this.status = 'waiting';
-		this.searched_count = 0;
+		this.searching = [];
 		this.total_count = ffwp_finder.strings.length;
 
 		// A timer used to throttle the search
@@ -59,8 +59,6 @@ jQuery(document).ready(function ($) {
 		this.cache.body.on( 'keyup', this.handleShortcuts );
 		this.cache.search.on( 'keyup', this.searchThrottle );
 		this.cache.finder.on( 'click', this.handleFinderWrapperEvents );
-		this.cache.finder.on( 'ffwpSearchBegun', this.setStatusSearching );
-		this.cache.finder.on( 'ffwpSearchFinished', this.setStatusComplete );
 	};
 
 	/**
@@ -165,12 +163,10 @@ jQuery(document).ready(function ($) {
 			}
 		}
 
-		ffwp_finder.setStatusSearching();
-
 		// Search the database
 		if ( wp.api !== 'undefined' ) {
 
-			var apiError = function() {
+			var apiError = function( collection, xhr ) {
 				if ( term !== ffwp_finder.current_term ) {
 					return;
 				}
@@ -180,10 +176,18 @@ jQuery(document).ready(function ($) {
 			if ( ffwp_finder_settings.post_types.length ) {
 
 				var apiSuccessPosts = function( collection, models, xhr ) {
-					if ( term !== ffwp_finder.current_term || !collection.length ) {
+
+					if ( term !== ffwp_finder.current_term ) {
 						return;
 					}
-					var post_type = _.findWhere( ffwp_finder_settings.post_types, { post_type: collection.at(0).get( 'type' ) } );
+
+					ffwp_finder.setStatusComplete( collection.post_type );
+
+					if ( !collection.length ) {
+						return;
+					}
+
+					var post_type = _.findWhere( ffwp_finder_settings.post_types, { post_type: collection.post_type } );
 					var url = ffwp_finder_settings.admin_url + post_type.edit_link + '&action=edit';
 					collection.forEach( function( post ) {
 
@@ -205,28 +209,47 @@ jQuery(document).ready(function ($) {
 				for ( var p in ffwp_finder_settings.post_types ) {
 					var post_type = ffwp_finder_settings.post_types[p].post_type;
 					var posts;
+					var post_collection;
+					ffwp_finder.setStatusSearching( post_type );
 					if ( post_type === 'post' ) {
-						posts = new wp.api.collections.Posts();
+						post_collection = wp.api.collections.Posts.extend( {
+							post_type: post_type,
+						} );
 					} else if ( post_type === 'page' ) {
-						posts = new wp.api.collections.Pages();
+						post_collection = wp.api.collections.Pages.extend( {
+							post_type: post_type,
+						} );
 					} else if ( post_type === 'attachment' ) {
-						posts = new wp.api.collections.Media();
+						post_collection = wp.api.collections.Media.extend( {
+							post_type: post_type,
+						} );
 					} else {
 						var routeModel = wp.api.endpoints.at(1);
-						var postModel = wp.api.collections.Posts.extend({
+						post_collection = wp.api.collections.Posts.extend({
 							url: routeModel.get( 'apiRoot' ) + routeModel.get( 'versionString' ) + post_type,
+							post_type: post_type,
 						});
-						posts = new postModel();
 					}
 
-					if ( posts && typeof posts.fetch === 'function' ) {
+					if ( post_collection ) {
+
+						posts = new post_collection();
+
+						var common_request_data = {
+							search: term,
+							posts_per_page: 100,
+							context: 'edit',
+						};
+
+						var data = {};
+						if ( post_type === 'attachment' ) {
+							_.extendOwn( data, common_request_data );
+						} else {
+							_.extendOwn( data, common_request_data, { status: 'any' } );
+						}
+
 						posts.fetch({
-							data: {
-								search: term,
-								posts_per_page: 100,
-								context: 'edit',
-								status: 'any',
-							},
+							data: data,
 							error: apiError,
 							success: apiSuccessPosts,
 						});
@@ -237,9 +260,17 @@ jQuery(document).ready(function ($) {
 			if ( ffwp_finder_settings.taxonomies.length ) {
 
 				var apiSuccessTerms = function( collection, models, xhr ) {
-					if ( term !== ffwp_finder.current_term || !collection.length ) {
+
+					if ( term !== ffwp_finder.current_term ) {
 						return;
 					}
+
+					ffwp_finder.setStatusComplete( collection.taxonomy );
+
+					if ( !collection.length ) {
+						return;
+					}
+
 					var taxonomy = _.findWhere( ffwp_finder_settings.taxonomies, { taxonomy_name: collection.at(0).get( 'taxonomy' ) } );
 					var url = ffwp_finder_settings.admin_url + 'term.php?taxonomy=' + taxonomy + '&tag_ID=';
 					collection.forEach( function( term ) {
@@ -260,17 +291,25 @@ jQuery(document).ready(function ($) {
 				};
 
 				for ( var t in ffwp_finder_settings.taxonomies ) {
+
 					var taxonomy_name = ffwp_finder_settings.taxonomies[t].taxonomy_name;
 					var terms;
+					var taxonomy_collection;
+					ffwp_finder.setStatusSearching( taxonomy_name );
 					if ( taxonomy_name === 'category' ) {
-						terms = new wp.api.collections.Categories();
+						taxonomy_collection = wp.api.collections.Categories.extend( {
+							taxonomy: taxonomy_name,
+						} );
 					} else if ( taxonomy_name === 'post_tag' ) {
-						terms = new wp.api.collections.Tags();
+						taxonomy_collection = wp.api.collections.Tags.extend( {
+							taxonomy: taxonomy_name,
+						} );
 					} else {
 						terms = null;
 					}
 
-					if ( terms ) {
+					if ( taxonomy_collection ) {
+						terms = new taxonomy_collection();
 						terms.fetch({
 							data: {
 								search: term,
@@ -284,6 +323,7 @@ jQuery(document).ready(function ($) {
 				}
 			}
 
+			ffwp_finder.setStatusSearching( 'users' );
 			var users = new wp.api.collections.Users();
 			users.fetch({
 				data: {
@@ -293,9 +333,17 @@ jQuery(document).ready(function ($) {
 				},
 				error: apiError,
 				success: function( collection, models, xhr ) {
-					if ( term !== ffwp_finder.current_term || !collection.length ) {
+
+					if ( term !== ffwp_finder.current_term ) {
 						return;
 					}
+
+					ffwp_finder.setStatusComplete( 'users' );
+
+					if ( !collection.length ) {
+						return;
+					}
+
 					var url = ffwp_finder_settings.admin_url + 'user-edit.php?user_id=';
 					collection.forEach( function( user ) {
 
@@ -315,6 +363,7 @@ jQuery(document).ready(function ($) {
 				},
 			});
 
+			ffwp_finder.setStatusSearching( 'comments' );
 			var comments = new wp.api.collections.Comments();
 			comments.fetch({
 				data: {
@@ -326,9 +375,17 @@ jQuery(document).ready(function ($) {
 				},
 				error: apiError,
 				success: function( collection, models, xhr ) {
-					if ( term !== ffwp_finder.current_term || !collection.length ) {
+
+					if ( term !== ffwp_finder.current_term ) {
 						return;
 					}
+
+					ffwp_finder.setStatusComplete( 'comments' );
+
+					if ( !collection.length ) {
+						return;
+					}
+
 					var url = ffwp_finder_settings.admin_url + 'comment.php?action=editcomment&c=';
 					collection.forEach( function( comment ) {
 
@@ -350,6 +407,7 @@ jQuery(document).ready(function ($) {
 		}
 
 		// Search list for matches
+		ffwp_finder.setStatusSearching( 'cache' );
 		var i = 0;
 		var len = ffwp_finder.strings.length;
 		var processBatch = function() {
@@ -362,12 +420,11 @@ jQuery(document).ready(function ($) {
 				// Emit an event when we've finished the search
 				if ( i + 1 >= len ) {
 					i++;
-					ffwp_finder.updateProgress( i );
-					ffwp_finder.cache.finder.trigger( 'ffwpSearchFinished' );
+					ffwp_finder.updateProgress();
+					ffwp_finder.setStatusComplete( 'cache' );
 
 				// Take a breath before continuing with the next batch
 				} else if ( i % 100 === 0 ) {
-					ffwp_finder.updateProgress( i );
 
 					// Stop looping if the term has changed
 					if ( term !== ffwp_finder.current_term ) {
@@ -463,10 +520,12 @@ jQuery(document).ready(function ($) {
 	 *
 	 * @since 0.1
 	 */
-	ffwp_finder.setStatusSearching = function() {
+	ffwp_finder.setStatusSearching = function( key ) {
 
 		ffwp_finder.cache.status.removeClass( 'fetching complete waiting' )
 			.addClass( 'searching' );
+
+		ffwp_finder.searching.push( key );
 
 		ffwp_finder.status = 'searching';
 	};
@@ -476,11 +535,20 @@ jQuery(document).ready(function ($) {
 	 *
 	 * @since 0.1
 	 */
-	ffwp_finder.setStatusComplete = function() {
+	ffwp_finder.setStatusComplete = function( key ) {
+
+		var search_completed = ffwp_finder.searching.indexOf( key );
+		if ( search_completed > -1 ) {
+			ffwp_finder.searching.splice( search_completed, 1 );
+		}
+
+		console.log(ffwp_finder.searching);
+		if ( ffwp_finder.searching.length ) {
+			return;
+		}
 
 		ffwp_finder.cache.status.removeClass( 'fetching searching waiting' )
 			.addClass( 'complete' );
-
 		ffwp_finder.status = 'complete';
 	};
 
@@ -505,15 +573,8 @@ jQuery(document).ready(function ($) {
 	 *
 	 * @since 0.1
 	 */
-	ffwp_finder.updateProgress = function( searched ) {
-		this.searched_count += searched;
-
-		// @todo needs to be translatable
-		if ( typeof searched === 'undefined' || searched === this.total_count ) {
-			ffwp_finder.cache.progress.html( ffwp_finder.results.length + ' matches' );
-		} else {
-			ffwp_finder.cache.progress.html( searched + '/' + this.total_count );
-		}
+	ffwp_finder.updateProgress = function() {
+		ffwp_finder.cache.progress.html( ffwp_finder.results.length + ' matches' );
 	};
 
 	/**
