@@ -185,6 +185,8 @@ jQuery(document).ready(function ($) {
 					posts = new wp.api.collections.Posts();
 				} else if ( post_type === 'page' ) {
 					posts = new wp.api.collections.Pages();
+				} else if ( post_type === 'attachment' ) {
+					posts = new wp.api.collections.Media();
 				} else {
 					posts = null;
 				}
