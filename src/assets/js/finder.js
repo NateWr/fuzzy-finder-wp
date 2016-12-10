@@ -18,6 +18,7 @@ jQuery(document).ready(function ($) {
 		this.urls = [];
 		this.post_ids = [];
 		this.term_ids = [];
+		this.user_ids = [];
 
 		// Check for local storage support in browser
 		var stored_strings = [];
@@ -27,6 +28,7 @@ jQuery(document).ready(function ($) {
 			stored_urls = JSON.parse( localStorage.getItem( 'ffwp_finder_urls' ) ) || [];
 			this.post_ids = JSON.parse( localStorage.getItem( 'ffwp_finder_post_ids' ) ) || [];
 			this.term_ids = JSON.parse( localStorage.getItem( 'ffwp_finder_term_ids' ) ) || [];
+			this.user_ids = JSON.parse( localStorage.getItem( 'ffwp_finder_user_ids' ) ) || [];
 			this.hasLocalStorage = true;
 		} catch( e ) {
 			this.hasLocalStorage = false;
@@ -256,6 +258,36 @@ jQuery(document).ready(function ($) {
 					}
 				}
 			}
+
+			var users = new wp.api.collections.Users();
+			users.fetch({
+				data: {
+					search: term,
+					posts_per_page: 100,
+				},
+				error: apiError,
+				success: function( collection, models, xhr ) {
+					if ( term !== ffwp_finder.current_term || !collection.length ) {
+						return;
+					}
+					var url = ffwp_finder_settings.admin_url + 'user-edit.php?user_id=';
+					collection.forEach( function( user ) {
+
+						// Don't add an item twice
+						var key = ffwp_finder.user_ids.indexOf( user.get( 'id' ) );
+						if ( key < 0 ) {
+							key = ffwp_finder.strings.length;
+						}
+
+						ffwp_finder.strings[key] = 'User > ' + user.get('name');
+						ffwp_finder.urls[key] = url + user.get( 'id' );
+						ffwp_finder.user_ids[key] = user.get( 'id' );
+						ffwp_finder.addResult( key, 'live', true );
+					} );
+					ffwp_finder.updateProgress();
+					ffwp_finder.updateLocalStorage();
+				},
+			});
 		}
 
 		// Search list for matches
@@ -459,6 +491,7 @@ jQuery(document).ready(function ($) {
 		localStorage.setItem( 'ffwp_finder_urls', JSON.stringify( urls ) );
 		localStorage.setItem( 'ffwp_finder_post_ids', JSON.stringify( ffwp_finder.post_ids ) );
 		localStorage.setItem( 'ffwp_finder_term_ids', JSON.stringify( ffwp_finder.term_ids ) );
+		localStorage.setItem( 'ffwp_finder_user_ids', JSON.stringify( ffwp_finder.user_ids ) );
 	};
 
 	// Go!
