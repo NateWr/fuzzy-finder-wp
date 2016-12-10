@@ -17,6 +17,7 @@ jQuery(document).ready(function ($) {
 		this.strings = [];
 		this.urls = [];
 		this.post_ids = [];
+		this.term_ids = [];
 
 		// Check for local storage support in browser
 		var stored_strings = [];
@@ -25,6 +26,7 @@ jQuery(document).ready(function ($) {
 			stored_strings = JSON.parse( localStorage.getItem( 'ffwp_finder_strings' ) ) || [];
 			stored_urls = JSON.parse( localStorage.getItem( 'ffwp_finder_urls' ) ) || [];
 			this.post_ids = JSON.parse( localStorage.getItem( 'ffwp_finder_post_ids' ) ) || [];
+			this.term_ids = JSON.parse( localStorage.getItem( 'ffwp_finder_term_ids' ) ) || [];
 			this.hasLocalStorage = true;
 		} catch( e ) {
 			this.hasLocalStorage = false;
@@ -146,60 +148,112 @@ jQuery(document).ready(function ($) {
 		ffwp_finder.setStatusSearching();
 
 		// Search the database
-		if ( wp.api !== 'undefined' && ffwp_finder_settings.post_types.length ) {
-
-			var apiSuccess = function( collection, models, xhr ) {
-				if ( term !== ffwp_finder.current_term || !collection.length ) {
-					return;
-				}
-				var post_type = _.findWhere( ffwp_finder_settings.post_types, { post_type: collection.at(0).get( 'type' ) } );
-				var url = ffwp_finder_settings.admin_url + post_type.edit_link + '&action=edit';
-				collection.forEach( function( post ) {
-
-					// Don't add an item twice
-					var key = ffwp_finder.post_ids.indexOf( post.get( 'id' ) );
-					if ( key < 0 ) {
-						key = ffwp_finder.strings.length;
-					}
-
-					ffwp_finder.strings[key] = post_type.label + ' > ' + post.get('title').rendered;
-					ffwp_finder.urls[key] = url.replace( '%d', post.get( 'id' ) );
-					ffwp_finder.post_ids[key] = post.get( 'id' );
-					ffwp_finder.addResult( key, 'live', true );
-				} );
-				ffwp_finder.updateProgress();
-				ffwp_finder.updateLocalStorage();
-			};
+		if ( wp.api !== 'undefined' ) {
 
 			var apiError = function() {
 				if ( term !== ffwp_finder.current_term ) {
 					return;
 				}
-				console.log( 'Error fetching posts. This error should probably be more helpful.' );
+				console.log( 'Error fetching results. This error should probably be more helpful.' );
 			};
 
-			for ( var p in ffwp_finder_settings.post_types ) {
-				var post_type = ffwp_finder_settings.post_types[p].post_type;
-				var posts;
-				if ( post_type === 'post' ) {
-					posts = new wp.api.collections.Posts();
-				} else if ( post_type === 'page' ) {
-					posts = new wp.api.collections.Pages();
-				} else if ( post_type === 'attachment' ) {
-					posts = new wp.api.collections.Media();
-				} else {
-					posts = null;
-				}
+			if ( ffwp_finder_settings.post_types.length ) {
 
-				if ( posts ) {
-					posts.fetch({
-						data: {
-							search: term,
-							posts_per_page: 100,
-						},
-						error: apiError,
-						success: apiSuccess,
-					});
+				var apiSuccessPosts = function( collection, models, xhr ) {
+					if ( term !== ffwp_finder.current_term || !collection.length ) {
+						return;
+					}
+					var post_type = _.findWhere( ffwp_finder_settings.post_types, { post_type: collection.at(0).get( 'type' ) } );
+					var url = ffwp_finder_settings.admin_url + post_type.edit_link + '&action=edit';
+					collection.forEach( function( post ) {
+
+						// Don't add an item twice
+						var key = ffwp_finder.post_ids.indexOf( post.get( 'id' ) );
+						if ( key < 0 ) {
+							key = ffwp_finder.strings.length;
+						}
+
+						ffwp_finder.strings[key] = post_type.label + ' > ' + post.get('title').rendered;
+						ffwp_finder.urls[key] = url.replace( '%d', post.get( 'id' ) );
+						ffwp_finder.post_ids[key] = post.get( 'id' );
+						ffwp_finder.addResult( key, 'live', true );
+					} );
+					ffwp_finder.updateProgress();
+					ffwp_finder.updateLocalStorage();
+				};
+
+				for ( var p in ffwp_finder_settings.post_types ) {
+					var post_type = ffwp_finder_settings.post_types[p].post_type;
+					var posts;
+					if ( post_type === 'post' ) {
+						posts = new wp.api.collections.Posts();
+					} else if ( post_type === 'page' ) {
+						posts = new wp.api.collections.Pages();
+					} else if ( post_type === 'attachment' ) {
+						posts = new wp.api.collections.Media();
+					} else {
+						posts = null;
+					}
+
+					if ( posts ) {
+						posts.fetch({
+							data: {
+								search: term,
+								posts_per_page: 100,
+							},
+							error: apiError,
+							success: apiSuccessPosts,
+						});
+					}
+				}
+			}
+
+			if ( ffwp_finder_settings.taxonomies.length ) {
+
+				var apiSuccessTerms = function( collection, models, xhr ) {
+					if ( term !== ffwp_finder.current_term || !collection.length ) {
+						return;
+					}
+					var taxonomy = _.findWhere( ffwp_finder_settings.taxonomies, { taxonomy_name: collection.at(0).get( 'taxonomy' ) } );
+					var url = ffwp_finder_settings.admin_url + 'term.php?taxonomy=' + taxonomy + '&tag_ID=';
+					collection.forEach( function( term ) {
+
+						// Don't add an item twice
+						var key = ffwp_finder.term_ids.indexOf( term.get( 'id' ) );
+						if ( key < 0 ) {
+							key = ffwp_finder.strings.length;
+						}
+
+						ffwp_finder.strings[key] = taxonomy.label + ' > ' + term.get('name');
+						ffwp_finder.urls[key] = url + term.get( 'id' );
+						ffwp_finder.term_ids[key] = term.get( 'id' );
+						ffwp_finder.addResult( key, 'live', true );
+					} );
+					ffwp_finder.updateProgress();
+					ffwp_finder.updateLocalStorage();
+				};
+
+				for ( var t in ffwp_finder_settings.taxonomies ) {
+					var taxonomy_name = ffwp_finder_settings.taxonomies[t].taxonomy_name;
+					var terms;
+					if ( taxonomy_name === 'category' ) {
+						terms = new wp.api.collections.Categories();
+					} else if ( taxonomy_name === 'post_tag' ) {
+						terms = new wp.api.collections.Tags();
+					} else {
+						terms = null;
+					}
+
+					if ( terms ) {
+						terms.fetch({
+							data: {
+								search: term,
+								posts_per_page: 100,
+							},
+							error: apiError,
+							success: apiSuccessTerms,
+						});
+					}
 				}
 			}
 		}
@@ -404,6 +458,7 @@ jQuery(document).ready(function ($) {
 		localStorage.setItem( 'ffwp_finder_strings', JSON.stringify( strings ) );
 		localStorage.setItem( 'ffwp_finder_urls', JSON.stringify( urls ) );
 		localStorage.setItem( 'ffwp_finder_post_ids', JSON.stringify( ffwp_finder.post_ids ) );
+		localStorage.setItem( 'ffwp_finder_term_ids', JSON.stringify( ffwp_finder.term_ids ) );
 	};
 
 	// Go!

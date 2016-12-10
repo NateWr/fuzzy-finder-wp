@@ -165,6 +165,7 @@ class ffwpInit {
 				'urls' => $this->urls,
 				'result_template' => $result_template,
 				'post_types' => $this->get_post_types(),
+				'taxonomies' => $this->get_taxonomies(),
 				'admin_url' => admin_url(),
 			)
 		);
@@ -226,6 +227,28 @@ class ffwpInit {
 				'post_type' => $post_type,
 				'label' => isset( $attributes->labels ) && !empty( $attributes->labels->singular_name ) ? $attributes->labels->singular_name : $attributes->label,
 				'edit_link' => $attributes->_edit_link,
+			);
+		}
+
+		$return = apply_filters( 'ffwp_post_types', $return );
+
+		return $return;
+	}
+
+	/**
+	 * Retrieve taxonomy information
+	 *
+	 * @since 0.1
+	 */
+	public function get_taxonomies() {
+
+		$return = array();
+
+		$taxonomies = get_taxonomies( array( 'show_ui' => true, 'show_in_rest' => true ), 'objects' );
+		foreach( $taxonomies as $name => $attributes ) {
+			$return[] = array(
+				'taxonomy_name' => $name,
+				'label' => isset( $attributes->labels ) && !empty( $attributes->labels->singular_name ) ? $attributes->labels->singular_name : $attributes->label,
 			);
 		}
 
