@@ -44,6 +44,9 @@ jQuery(document).ready(function ($) {
 		this.searched_count = 0;
 		this.total_count = ffwp_finder.strings.length;
 
+		// A timer used to throttle the search
+		this.search_throttle = 0;
+
 		// jQuery object cache
 		this.cache = this.cache || {};
 		this.cache.body = $( 'body' );
@@ -54,7 +57,7 @@ jQuery(document).ready(function ($) {
 		this.cache.progress = this.cache.status.find( '.ffwp-progress' );
 
 		this.cache.body.on( 'keyup', this.handleShortcuts );
-		this.cache.search.on( 'keyup', this.search );
+		this.cache.search.on( 'keyup', this.searchThrottle );
 		this.cache.finder.on( 'click', this.handleFinderWrapperEvents );
 		this.cache.finder.on( 'ffwpSearchBegun', this.setStatusSearching );
 		this.cache.finder.on( 'ffwpSearchFinished', this.setStatusComplete );
@@ -118,6 +121,19 @@ jQuery(document).ready(function ($) {
 		if ( e.type == 'click' && e.target.id == 'ffwp-finder' ) {
 			ffwp_finder.close();
 		}
+	};
+
+	/**
+	 * Wrap the search function with a small utility to throttle requests.
+	 *
+	 * This prevents the search from firing unless its been 300ms since the last
+	 * request.
+	 *
+	 * @since 0.1
+	 */
+	ffwp_finder.searchThrottle = function() {
+		clearTimeout( ffwp_finder.search_throttle );
+		ffwp_finder.search_throttle = setTimeout( ffwp_finder.search, 300 );
 	};
 
 	/**
