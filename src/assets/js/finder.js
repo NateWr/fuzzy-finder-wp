@@ -542,7 +542,6 @@ jQuery(document).ready(function ($) {
 			ffwp_finder.searching.splice( search_completed, 1 );
 		}
 
-		console.log(ffwp_finder.searching);
 		if ( ffwp_finder.searching.length ) {
 			return;
 		}
