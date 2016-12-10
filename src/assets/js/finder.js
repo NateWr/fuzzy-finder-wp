@@ -19,6 +19,7 @@ jQuery(document).ready(function ($) {
 		this.post_ids = [];
 		this.term_ids = [];
 		this.user_ids = [];
+		this.comment_ids = [];
 
 		// Check for local storage support in browser
 		var stored_strings = [];
@@ -29,6 +30,7 @@ jQuery(document).ready(function ($) {
 			this.post_ids = JSON.parse( localStorage.getItem( 'ffwp_finder_post_ids' ) ) || [];
 			this.term_ids = JSON.parse( localStorage.getItem( 'ffwp_finder_term_ids' ) ) || [];
 			this.user_ids = JSON.parse( localStorage.getItem( 'ffwp_finder_user_ids' ) ) || [];
+			this.comment_ids = JSON.parse( localStorage.getItem( 'ffwp_finder_comment_ids' ) ) || [];
 			this.hasLocalStorage = true;
 		} catch( e ) {
 			this.hasLocalStorage = false;
@@ -288,6 +290,37 @@ jQuery(document).ready(function ($) {
 					ffwp_finder.updateLocalStorage();
 				},
 			});
+
+			var comments = new wp.api.collections.Comments();
+			comments.fetch({
+				data: {
+					search: term,
+					posts_per_page: 100,
+					_embed: true,
+				},
+				error: apiError,
+				success: function( collection, models, xhr ) {
+					if ( term !== ffwp_finder.current_term || !collection.length ) {
+						return;
+					}
+					var url = ffwp_finder_settings.admin_url + 'comment.php?action=editcomment&c=';
+					collection.forEach( function( comment ) {
+
+						// Don't add an item twice
+						var key = ffwp_finder.comment_ids.indexOf( comment.get( 'id' ) );
+						if ( key < 0 ) {
+							key = ffwp_finder.strings.length;
+						}
+
+						ffwp_finder.strings[key] = 'Comment > ' + comment.get('author_name') + ' > ' + comment.get( '_embedded' ).up[0].title.rendered + ' > ' + $( comment.get( 'content' ).rendered ).text().substring( 0, 50 );
+						ffwp_finder.urls[key] = url + comment.get( 'id' );
+						ffwp_finder.comment_ids[key] = comment.get( 'id' );
+						ffwp_finder.addResult( key, 'live', true );
+					} );
+					ffwp_finder.updateProgress();
+					ffwp_finder.updateLocalStorage();
+				},
+			});
 		}
 
 		// Search list for matches
@@ -492,6 +525,7 @@ jQuery(document).ready(function ($) {
 		localStorage.setItem( 'ffwp_finder_post_ids', JSON.stringify( ffwp_finder.post_ids ) );
 		localStorage.setItem( 'ffwp_finder_term_ids', JSON.stringify( ffwp_finder.term_ids ) );
 		localStorage.setItem( 'ffwp_finder_user_ids', JSON.stringify( ffwp_finder.user_ids ) );
+		localStorage.setItem( 'ffwp_finder_comment_ids', JSON.stringify( ffwp_finder.comment_ids ) );
 	};
 
 	// Go!
