@@ -148,41 +148,58 @@ jQuery(document).ready(function ($) {
 		// Search the database
 		if ( wp.api !== 'undefined' && ffwp_finder_settings.post_types.length ) {
 
-			var posts = new wp.api.collections.Posts();
-			posts.fetch({
-				data: {
-					search: term,
-					posts_per_page: 100,
-				},
-				error: function() {
-					if ( term !== ffwp_finder.current_term ) {
-						return;
+			var apiSuccess = function( collection, models, xhr ) {
+				if ( term !== ffwp_finder.current_term || !collection.length ) {
+					return;
+				}
+				var post_type = _.findWhere( ffwp_finder_settings.post_types, { post_type: collection.at(0).get( 'type' ) } );
+				var url = ffwp_finder_settings.admin_url + '/' + post_type.edit_link + '&action=edit';
+				collection.forEach( function( post ) {
+
+					// Don't add an item twice
+					var key = ffwp_finder.post_ids.indexOf( post.get( 'id' ) );
+					if ( key < 0 ) {
+						key = ffwp_finder.strings.length;
 					}
-					console.log( 'Error fetching posts. This error should probably be more helpful.' );
-				},
-				success: function( collection, models, xhr ) {
-					if ( term !== ffwp_finder.current_term ) {
-						return;
-					}
-					var url = ffwp_finder_settings.admin_url + '/' + _.findWhere( ffwp_finder_settings.post_types, { post_type: 'post' } ).edit_link + '&action=edit';
-					collection.forEach( function( post ) {
 
-						// Don't add an item twice
-						var key = ffwp_finder.post_ids.indexOf( post.get( 'id' ) );
-						if ( key < 0 ) {
-							key = ffwp_finder.strings.length;
-						}
+					ffwp_finder.strings[key] = post_type.label + ' > ' + post.get('title').rendered;
+					ffwp_finder.urls[key] = url.replace( '%d', post.get( 'id' ) );
+					ffwp_finder.post_ids[key] = post.get( 'id' );
+					ffwp_finder.addResult( key, 'live', true );
+				} );
+				ffwp_finder.updateProgress();
+				ffwp_finder.updateLocalStorage();
+			};
 
-						ffwp_finder.strings[key] = post.get('title').rendered;
-						ffwp_finder.urls[key] = url.replace( '%d', post.get( 'id' ) );
-						ffwp_finder.post_ids[key] = post.get( 'id' );
-						ffwp_finder.addResult( key, 'live', true );
-					} );
-					ffwp_finder.updateProgress();
-					ffwp_finder.updateLocalStorage();
-				},
-			});
+			var apiError = function() {
+				if ( term !== ffwp_finder.current_term ) {
+					return;
+				}
+				console.log( 'Error fetching posts. This error should probably be more helpful.' );
+			};
 
+			for ( var p in ffwp_finder_settings.post_types ) {
+				var post_type = ffwp_finder_settings.post_types[p].post_type;
+				var posts;
+				if ( post_type === 'post' ) {
+					posts = new wp.api.collections.Posts();
+				} else if ( post_type === 'page' ) {
+					posts = new wp.api.collections.Pages();
+				} else {
+					posts = null;
+				}
+
+				if ( posts ) {
+					posts.fetch({
+						data: {
+							search: term,
+							posts_per_page: 100,
+						},
+						error: apiError,
+						success: apiSuccess,
+					});
+				}
+			}
 		}
 
 		// Search list for matches
