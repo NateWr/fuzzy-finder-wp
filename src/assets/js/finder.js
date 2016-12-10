@@ -225,6 +225,7 @@ jQuery(document).ready(function ($) {
 								search: term,
 								posts_per_page: 100,
 								context: 'edit',
+								status: 'any',
 							},
 							error: apiError,
 							success: apiSuccessPosts,
@@ -274,6 +275,7 @@ jQuery(document).ready(function ($) {
 							data: {
 								search: term,
 								posts_per_page: 100,
+								context: 'edit',
 							},
 							error: apiError,
 							success: apiSuccessTerms,
@@ -287,6 +289,7 @@ jQuery(document).ready(function ($) {
 				data: {
 					search: term,
 					posts_per_page: 100,
+					context: 'edit',
 				},
 				error: apiError,
 				success: function( collection, models, xhr ) {
@@ -317,6 +320,8 @@ jQuery(document).ready(function ($) {
 				data: {
 					search: term,
 					posts_per_page: 100,
+					context: 'edit',
+					status: 'any',
 					_embed: true,
 				},
 				error: apiError,
