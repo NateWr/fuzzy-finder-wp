@@ -224,6 +224,7 @@ jQuery(document).ready(function ($) {
 							data: {
 								search: term,
 								posts_per_page: 100,
+								context: 'edit',
 							},
 							error: apiError,
 							success: apiSuccessPosts,
