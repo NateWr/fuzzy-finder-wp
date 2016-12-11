@@ -6,7 +6,7 @@ Search results are cached in your browser's local storage. Previous results that
 
 It will also search custom post types that have been registered with the `show_ui` and `show_in_rest` arguments set to `true`.
 
-Inspired by the [Atom package](https://github.com/atom/fuzzy-finder).
+Inspired by the [Atom package](https://github.com/atom/fuzzy-finder). Leans heavily on [client-js](https://github.com/WP-API/client-js) for handling REST API content endpoints.
 
 ## Installation
 

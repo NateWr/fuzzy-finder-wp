@@ -2,8 +2,6 @@
 
 module.exports = function(grunt) {
 
-	var export_dir = '/var/www/html/wp/wp-content/plugins';
-
 	// Project configuration.
 	grunt.initConfig({
 
@@ -67,21 +65,9 @@ module.exports = function(grunt) {
 					cwd: 'src',
 					dest: 'dist',
 					src: [
-						'**/*.{php,txt}',
+						'**/*.{php,txt,md}',
 					]
 				}]
-			}
-		},
-
-		sync: {
-			main: {
-				files: [
-					{
-						cwd: 'dist/',
-						src: '**',
-						dest: export_dir + '/<%= pkg.name %>'
-					}
-				]
 			}
 		},
 
@@ -89,31 +75,46 @@ module.exports = function(grunt) {
 		watch: {
 			less: {
 				files: ['src/assets/less/*.less'],
-				tasks: ['less', 'sync']
+				tasks: ['less']
 			},
 			js: {
 				files: ['src/assets/js/*.js'],
-				tasks: ['jshint', 'concat', 'uglify', 'sync']
+				tasks: ['jshint', 'concat', 'uglify']
 			},
 			copy: {
-				files: ['src/**/*.{php,txt}'],
-				tasks: ['copy', 'sync']
+				files: ['src/**/*.{php,txt,md}'],
+				tasks: ['copy']
 			},
-			sync: {
-				files: ['dist/**/*'],
-				tasks: ['sync']
+		},
+
+		// Build a package for distribution
+		compress: {
+			main: {
+				options: {
+					archive: 'fuzzy-finder-<%= pkg.version %>.zip'
+				},
+				files: [
+					{
+						expand: true,
+						cwd: 'dist/',
+						src: [
+							'*', '**/*',
+						],
+						dest: 'fuzzy-finder/',
+					}
+				]
 			}
 		}
 
 	});
 
 	// Load tasks
+	grunt.loadNpmTasks('grunt-contrib-compress');
 	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-copy');
 	grunt.loadNpmTasks('grunt-contrib-jshint');
 	grunt.loadNpmTasks('grunt-contrib-less');
 	grunt.loadNpmTasks('grunt-contrib-nodeunit');
-	grunt.loadNpmTasks('grunt-sync');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 
