@@ -1,5 +1,7 @@
 # Fuzzy Finder
 
+[![Video demonstrating the fuzzy finder](https://github.com/NateWr/fuzzy-finder-wp/blob/master/assets/video-image.png)](https://www.youtube.com/watch?v=d75mT2fkQUc)
+
 A fuzzy finder for your WordPress admin. <kbd>ctrl-shift-f</kbd> from any WordPress admin area to quickly search for Posts, Pages, Categories, Tags and Users.
 
 Search results are cached in your browser's local storage. Previous results that match your current search will be shown immediately.
