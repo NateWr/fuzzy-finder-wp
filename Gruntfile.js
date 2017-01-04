@@ -91,7 +91,7 @@ module.exports = function(grunt) {
 		compress: {
 			main: {
 				options: {
-					archive: 'fuzzy-finder-<%= pkg.version %>.zip'
+					archive: 'fuzzy-finder-wp-<%= pkg.version %>.zip'
 				},
 				files: [
 					{
@@ -100,7 +100,7 @@ module.exports = function(grunt) {
 						src: [
 							'*', '**/*',
 						],
-						dest: 'fuzzy-finder/',
+						dest: 'fuzzy-finder-wp/',
 					}
 				]
 			}
